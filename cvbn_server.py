@@ -43,7 +43,7 @@ class vbn(object):
         """
         port = self._determine_rpc_port(server)
         factory = RpcMethodFactory.factory(
-            '{}:{}'.format(server, str(port))
+                '{}:{}'.format(server, str(port))
         )
         self._walk_method = factory.method('walk')
         self._get_method = factory.method('get')
@@ -58,214 +58,225 @@ class vbn(object):
         factory = RpcMethodFactory.factory('{}:26265'.format(server))
         try:
             factory.method('get').invoke(
-                'cvbn-service-agent', 'magic', {
-                    'tid': 'website',
-                    'name': 'cvbb-rest-interface',
-                })
+                    'cvbn-service-agent', 'magic', {
+                        'tid': 'website',
+                        'name': 'cvbb-rest-interface',
+                    })
         except (RpcMethodError):
             return 26265
         else:
             return 8280
 
-    def create_network(self,prefix,network_type,interface):
-	''' Creates networking object '''
-	params = {}
-	params['tid'] = 'networking.network'
-	params['name'] = prefix
-	params['network_type'] = network_type
-	params['host_interface'] = interface
-	try:
-	    result = self._set_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
+    def create_network(self, prefix, network_type, interface):
+        ''' Creates networking object '''
 
-    def is_networking(self):
-	''' Check if there is any networking object created '''
-	params = {'tid':'networking.network'}
-	try:
-	    result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
-        retValue = False
-        for instances in result['children']:
-        	retValue = True
-        return retValue
+    params = {}
+    params['tid'] = 'networking.network'
+    params['name'] = prefix
+    params['network_type'] = network_type
+    params['host_interface'] = interface
+    try:
+        result = self._set_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
 
-    def find_network_type(self, name):
-	if name == "overlay":
-		return self.find_network("overlay-network")
-	if name == "vlan":
-		return self.find_network("vlan-network")
-	if name == "tap":
-		return self.find_network("wan-network")
-	return None
 
-    def find_network(self,name):
-	''' Find networking.network object with name '''
-	params = {'tid':'networking.network'}
-	try:
-	    result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
-        for instances in result['children']:
-		if instances['name'] == name:
-			return instances['id']
-        return None
+def is_networking(self):
+    ''' Check if there is any networking object created '''
+    params = {'tid': 'networking.network'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
+    retValue = False
+    for instances in result['children']:
+        retValue = True
+    return retValue
 
-    def del_network(self,name):
-	''' Delete network by name '''
-	uuid = self.find_network(name)
-	if not uuid == None:
-		self.del_network_uuid(uuid)
 
-    def del_network_uuid(self,uuid):
-	''' Delete network by uuid '''
-	params = {'tid':'networking.network','id':uuid}
-	try:
-	    result = self._delete_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
+def find_network_type(self, name):
+    if name == "overlay":
+        return self.find_network("overlay-network")
+    if name == "vlan":
+        return self.find_network("vlan-network")
+    if name == "tap":
+        return self.find_network("wan-network")
+    return None
 
-    def info_network(self):
-        params = {'tid':'networking.network'}
-        try:
-		result = self._walk_method.invoke(self.agent, self.cid, params)
-        except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
-        return json.dumps(result)
 
-    def addSubnet(self,prefix,cidr,defgw,network,pool_start,pool_end):
-	''' Create subnet object '''
-	params = {}
-	params['tid'] = 'networking.subnet'
-	params['name'] = prefix
-	params['cidr'] = cidr
-	params['network_id'] = network
-        if pool_start != 'none':
-                params['allocation_pools'] = [ {'start':pool_start,'end':pool_end} ]
-	if not defgw == 'none':
-		params['gateway_ip'] = defgw
-	try:
-		result = self._set_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+def find_network(self, name):
+    ''' Find networking.network object with name '''
+    params = {'tid': 'networking.network'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
+    for instances in result['children']:
+        if instances['name'] == name:
+            return instances['id']
+    return None
 
-	return result['id']
 
-    def getSubnets(self):
-	"""
+def del_network(self, name):
+    ''' Delete network by name '''
+    uuid = self.find_network(name)
+    if not uuid == None:
+        self.del_network_uuid(uuid)
+
+
+def del_network_uuid(self, uuid):
+    ''' Delete network by uuid '''
+    params = {'tid': 'networking.network', 'id': uuid}
+    try:
+        result = self._delete_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
+
+
+def info_network(self):
+    params = {'tid': 'networking.network'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
+    return json.dumps(result)
+
+
+def addSubnet(self, prefix, cidr, defgw, network, pool_start, pool_end):
+    ''' Create subnet object '''
+    params = {}
+    params['tid'] = 'networking.subnet'
+    params['name'] = prefix
+    params['cidr'] = cidr
+    params['network_id'] = network
+    if pool_start != 'none':
+        params['allocation_pools'] = [{'start': pool_start, 'end': pool_end}]
+    if not defgw == 'none':
+        params['gateway_ip'] = defgw
+    try:
+        result = self._set_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
+
+    return result['id']
+
+
+def getSubnets(self):
+    """
 >>> print server.getSubnets()
 []
 	"""
-	params = {'tid':'networking.subnet'}
-	try:
-		result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+    params = {'tid': 'networking.subnet'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-        return result['children']
-
-    def getSubnetId(self, subnetId):
-
-	params = {'tid':'networking.subnet'}
-	try:
-		result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
-
-        for instances in result['children']:
-		if instances['id'] == subnetId:
-			return instances
-
-	return None
-
-    def getSubnetName(self, subnetName):
-
-	params = {'tid':'networking.subnet'}
-	try:
-		result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
-
-        for instances in result['children']:
-		if instances['name'] == subnetName:
-			return instances
-
-	return None
+    return result['children']
 
 
-    def get_network_subnet(self,uuid):
-	''' Get first subnet for network 'uuid' '''
-	params = {'tid':'networking.network','id':uuid}
-	try:
-	    result = self._get_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-            err = '{}\n{}'.format(sys.argv, error)
-            print >> sys.stderr, err
-            sys.exit(1)
-	return result['subnets'][0]
+def getSubnetId(self, subnetId):
+    params = {'tid': 'networking.subnet'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-    def del_subnet(self,name):
-	''' Delete subnet by name '''
-	uuid = self.find_subnet(name)
-	if not uuid == None:
-		self.del_subnet_uuid(uuid)
+    for instances in result['children']:
+        if instances['id'] == subnetId:
+            return instances
 
-    def deleteSubnet(self, subnetId):
+    return None
 
-	if self.getSubnetId(subnetId) == None:
-		return False
 
-	params = {'tid':'networking.subnet','id':subnetId}
-	try:
-	    result = self._delete_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+def getSubnetName(self, subnetName):
+    params = {'tid': 'networking.subnet'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-	return True
+    for instances in result['children']:
+        if instances['name'] == subnetName:
+            return instances
 
-    def enableNat(self, natInterface, subnetId):
-        """.. function:: enableNat(natInterface, natSubnet)
+    return None
+
+
+def get_network_subnet(self, uuid):
+    ''' Get first subnet for network 'uuid' '''
+    params = {'tid': 'networking.network', 'id': uuid}
+    try:
+        result = self._get_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        sys.exit(1)
+    return result['subnets'][0]
+
+
+def del_subnet(self, name):
+    ''' Delete subnet by name '''
+    uuid = self.find_subnet(name)
+    if not uuid == None:
+        self.del_subnet_uuid(uuid)
+
+
+def deleteSubnet(self, subnetId):
+    if self.getSubnetId(subnetId) == None:
+        return False
+
+    params = {'tid': 'networking.subnet', 'id': subnetId}
+    try:
+        result = self._delete_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
+
+    return True
+
+
+def enableNat(self, natInterface, subnetId):
+    """.. function:: enableNat(natInterface, natSubnet)
 
 	Enable NAT on the server
 
@@ -280,69 +291,68 @@ class vbn(object):
 
         """
 
-	if not (self.getNat() == None):
-		return None
+    if not (self.getNat() == None):
+        return None
 
-	if self.getSubnetId(subnetId) == None:
-		return None
+    if self.getSubnetId(subnetId) == None:
+        return None
 
-	params = {}
-	params['tid'] = 'host.nat'
-	params['out_interface'] = natInterface
-	params['subnet_id'] = subnetId
-	try:
-		result = self._set_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+    params = {}
+    params['tid'] = 'host.nat'
+    params['out_interface'] = natInterface
+    params['subnet_id'] = subnetId
+    try:
+        result = self._set_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-	return None
+    return None
 
-    def getNat(self):
 
-	"""
+def getNat(self):
+    """
 	>>> print server.getNat()
 	None
 	"""
-	params = {'tid':'host.nat'}
-	try:
-		result = self._walk_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+    params = {'tid': 'host.nat'}
+    try:
+        result = self._walk_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-	for instances in result['children']:
-		return instances
+    for instances in result['children']:
+        return instances
 
-	return None
+    return None
 
-    def disableNat(self):
 
-	natInfo = self.getNat()
-	if natInfo == None:
-		return False
+def disableNat(self):
+    natInfo = self.getNat()
+    if natInfo == None:
+        return False
 
-	params = {'tid':'host.nat','id':natInfo['id']}
-	try:
-		result = self._delete_method.invoke(self.agent, self.cid, params)
-	except RpcMethodError as error:
-		err = '{}\n{}'.format(sys.argv, error)
-		print >> sys.stderr, err
-		raise CvbnApiFailure(err)
-	except:
-		err = "Unknown reason for CVBN API execution failure"
-		print >> sys.stderr, err
-		raise CvbnApiFailure("reason unknown")
+    params = {'tid': 'host.nat', 'id': natInfo['id']}
+    try:
+        result = self._delete_method.invoke(self.agent, self.cid, params)
+    except RpcMethodError as error:
+        err = '{}\n{}'.format(sys.argv, error)
+        print >> sys.stderr, err
+        raise CvbnApiFailure(err)
+    except:
+        err = "Unknown reason for CVBN API execution failure"
+        print >> sys.stderr, err
+        raise CvbnApiFailure("reason unknown")
 
-	return True
-
+    return True
